@@ -1,0 +1,65 @@
+manifestSchemaVersion: 3
+appId: my-app
+version: 1.0.0
+displayName: "My App"
+description: "SotaAgent app."
+publisher:
+  id: local-dev
+  displayName: "Local Dev"
+  contact: dev@local-dev.example
+contributes:
+  skills:
+    - name: example
+      description: Example content-backed skill.
+      appendsTo: system
+      content: src/skills/example
+      timeoutMs: 3000
+      failure_mode: skip
+  tools:
+    - name: example
+      description: Example tool that echoes its input and verified tenant context.
+      route: POST /tools/example
+      inputSchema: src/schemas/tool-input.schema.json
+      outputSchema: src/schemas/tool-output.schema.json
+      timeoutMs: 15000
+      failure_mode: abort
+  ui:
+    - id: admin-screen
+      kind: nativeModule
+      surface: page
+      slot: admin.workspace.tab
+      sectionId: my-app
+      label: Admin screen
+      route: /my-app/*
+      module:
+        entry: dist/ui/app.js
+        export: AdminScreen
+        styles: dist/ui/app.css
+    - id: example-tool-result
+      kind: nativeModule
+      surface: tool-view
+      slot: chat.message.inline.below
+      label: Example result
+      toolNames:
+        - example
+      renderBeforeOutput: true
+      module:
+        entry: dist/ui/app.js
+        export: ExampleToolResult
+        styles: dist/ui/app.css
+service:
+  baseUrl: https://my-app.invalid
+health:
+  url: https://my-app.invalid/health
+  intervalSeconds: 60
+environments:
+  local:
+    service:
+      baseUrl: http://localhost:8787
+    health:
+      url: http://localhost:8787/health
+platform: ^1.2.0
+locales:
+  default: en
+  files:
+    en: src/locales/en.json

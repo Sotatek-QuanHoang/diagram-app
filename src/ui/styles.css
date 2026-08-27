@@ -1,0 +1,30 @@
+[data-sota-app="my-app"].starter-root {
+  box-sizing: border-box;
+  color: var(--foreground, #15171a);
+  font-family: inherit;
+}
+
+[data-sota-app="my-app"].starter-page {
+  min-height: 100%;
+  padding: 32px;
+}
+
+[data-sota-app="my-app"] .starter-eyebrow {
+  color: #1267e5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+[data-sota-app="my-app"].starter-result {
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+[data-sota-app="my-app"] pre {
+  margin: 12px 0 0;
+  overflow: auto;
+  white-space: pre-wrap;
+}
