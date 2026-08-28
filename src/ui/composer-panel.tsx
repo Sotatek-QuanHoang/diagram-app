@@ -114,7 +114,7 @@ export function DiagramComposerPanel() {
   if (!TOKEN.test(value)) return null;
 
   return (
-    <section className="dg-root dg-composer" data-sota-app="my-app" aria-label="Diagram starters">
+    <section className="dg-root dg-composer" data-sota-app="diagram-app" aria-label="Diagram starters">
       <div className="dg-composer-group">
         <span className="dg-composer-heading">A system</span>
         <div className="dg-composer-chips">

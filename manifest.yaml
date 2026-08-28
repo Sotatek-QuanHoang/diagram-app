@@ -1,7 +1,7 @@
 manifestSchemaVersion: 3
-appId: my-app
+appId: diagram-app
 version: 1.0.0
-displayName: "Diagram Studio"
+displayName: "Diagram App"
 description: "Generates flowcharts, sequence diagrams, and ER diagrams as editable draw.io (.drawio) files."
 publisher:
   id: local-dev
@@ -54,9 +54,9 @@ contributes:
       kind: nativeModule
       surface: page
       slot: admin.workspace.tab
-      sectionId: my-app
+      sectionId: diagram-app
       label: Diagram studio
-      route: /my-app/*
+      route: /diagram-app/*
       module:
         entry: dist/ui/app.js
         export: DiagramStudio
@@ -74,9 +74,9 @@ contributes:
         export: DiagramToolResult
         styles: dist/ui/app.css
 service:
-  baseUrl: https://my-app.invalid
+  baseUrl: https://diagram-app.invalid
 health:
-  url: https://my-app.invalid/health
+  url: https://diagram-app.invalid/health
   intervalSeconds: 60
 environments:
   local:

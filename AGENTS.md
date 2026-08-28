@@ -1,4 +1,4 @@
-# my-app
+# Diagram App
 
 This app uses the framework-neutral Sota JWT/JWKS wire contract. Trust only verified claims (iid/oid/wid/sub/scp); never tenant fields from request bodies or unsigned headers. The app has no Sota private key. Return normal JSON/HTTP responses.
 

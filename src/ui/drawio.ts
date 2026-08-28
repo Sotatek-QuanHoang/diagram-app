@@ -45,7 +45,7 @@ export function sceneToDrawio(scene: Scene, options: DrawioOptions = {}): string
   }
 
   const pageName = escapeXml(options.pageName ?? (scene.title || 'Page-1'));
-  const agent = escapeXml(options.agent ?? 'my-app');
+  const agent = escapeXml(options.agent ?? 'diagram-app');
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',

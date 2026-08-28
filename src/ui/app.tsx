@@ -196,7 +196,7 @@ export function DiagramToolResult({
           ? 'from mermaid'
           : undefined;
     return (
-      <section className="dg-root dg-card dg-pending" data-sota-app="my-app">
+      <section className="dg-root dg-card dg-pending" data-sota-app="diagram-app">
         <Spinner />
         <span>
           {state === 'input-streaming' ? 'Composing diagram' : 'Generating diagram'}
@@ -208,7 +208,7 @@ export function DiagramToolResult({
 
   if (state === 'output-error') {
     return (
-      <section className="dg-root dg-card" data-sota-app="my-app">
+      <section className="dg-root dg-card" data-sota-app="diagram-app">
         <ErrorNote
           title="Diagram generation failed"
           message={toolResult.errorText ?? 'The tool returned an error.'}
@@ -222,7 +222,7 @@ export function DiagramToolResult({
     // Older stored results, or a payload the renderer does not understand:
     // degrade rather than throw — the plain tool result is still readable.
     return (
-      <section className="dg-root dg-card" data-sota-app="my-app">
+      <section className="dg-root dg-card" data-sota-app="diagram-app">
         <p className="dg-muted">No diagram in this result.</p>
       </section>
     );
@@ -233,7 +233,7 @@ export function DiagramToolResult({
   const hasPreview = Boolean(result.preview?.shapes?.length);
 
   return (
-    <section className="dg-root dg-card" data-sota-app="my-app">
+    <section className="dg-root dg-card" data-sota-app="diagram-app">
       <header className="dg-header">
         <h3>{result.title || KIND_LABELS[result.kind] || 'Diagram'}</h3>
         <DiagramMeta result={result} />
@@ -311,7 +311,7 @@ export function DiagramStudio() {
   }, []);
 
   return (
-    <main className="dg-root dg-page" data-sota-app="my-app">
+    <main className="dg-root dg-page" data-sota-app="diagram-app">
       <header className="dg-page-header">
         <h1>Diagram studio</h1>
         <p className="dg-muted">

@@ -5,25 +5,25 @@
  * draw.io.
  */
 
-[data-sota-app='my-app'].dg-root {
+[data-sota-app='diagram-app'].dg-root {
   box-sizing: border-box;
   color: inherit;
   font-family: inherit;
 }
 
-[data-sota-app='my-app'] *,
-[data-sota-app='my-app'] *::before,
-[data-sota-app='my-app'] *::after {
+[data-sota-app='diagram-app'] *,
+[data-sota-app='diagram-app'] *::before,
+[data-sota-app='diagram-app'] *::after {
   box-sizing: border-box;
 }
 
-[data-sota-app='my-app'] .dg-muted {
+[data-sota-app='diagram-app'] .dg-muted {
   color: color-mix(in srgb, currentColor 62%, transparent);
 }
 
 /* ------------------------------------------------------------------ page */
 
-[data-sota-app='my-app'].dg-page {
+[data-sota-app='diagram-app'].dg-page {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -31,18 +31,18 @@
   padding: 28px;
 }
 
-[data-sota-app='my-app'] .dg-page-header h1 {
+[data-sota-app='diagram-app'] .dg-page-header h1 {
   font-size: 22px;
   font-weight: 650;
   margin: 0 0 6px;
 }
 
-[data-sota-app='my-app'] .dg-page-header p {
+[data-sota-app='diagram-app'] .dg-page-header p {
   margin: 0;
   max-width: 68ch;
 }
 
-[data-sota-app='my-app'] .dg-columns {
+[data-sota-app='diagram-app'] .dg-columns {
   display: grid;
   gap: 20px;
   grid-template-columns: minmax(300px, 2fr) minmax(320px, 3fr);
@@ -50,13 +50,13 @@
 }
 
 @media (max-width: 900px) {
-  [data-sota-app='my-app'] .dg-columns {
+  [data-sota-app='diagram-app'] .dg-columns {
     grid-template-columns: 1fr;
   }
 }
 
-[data-sota-app='my-app'] .dg-editor,
-[data-sota-app='my-app'] .dg-output {
+[data-sota-app='diagram-app'] .dg-editor,
+[data-sota-app='diagram-app'] .dg-output {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -65,12 +65,12 @@
 
 /* ---------------------------------------------------------------- editor */
 
-[data-sota-app='my-app'] .dg-modes {
+[data-sota-app='diagram-app'] .dg-modes {
   display: flex;
   gap: 4px;
 }
 
-[data-sota-app='my-app'] .dg-mode {
+[data-sota-app='diagram-app'] .dg-mode {
   background: none;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -82,23 +82,23 @@
   padding: 6px 12px;
 }
 
-[data-sota-app='my-app'] .dg-mode:hover {
+[data-sota-app='diagram-app'] .dg-mode:hover {
   background: color-mix(in srgb, currentColor 8%, transparent);
 }
 
-[data-sota-app='my-app'] .dg-mode-on {
+[data-sota-app='diagram-app'] .dg-mode-on {
   border-color: color-mix(in srgb, currentColor 20%, transparent);
   font-weight: 600;
   opacity: 1;
 }
 
-[data-sota-app='my-app'] .dg-mode:focus-visible,
-[data-sota-app='my-app'] .dg-link:focus-visible {
+[data-sota-app='diagram-app'] .dg-mode:focus-visible,
+[data-sota-app='diagram-app'] .dg-link:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
-[data-sota-app='my-app'] textarea.dg-source {
+[data-sota-app='diagram-app'] textarea.dg-source {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12.5px;
   line-height: 1.55;
@@ -107,7 +107,7 @@
   white-space: pre;
 }
 
-[data-sota-app='my-app'] .dg-editor-actions {
+[data-sota-app='diagram-app'] .dg-editor-actions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -115,7 +115,7 @@
   justify-content: space-between;
 }
 
-[data-sota-app='my-app'] .dg-examples {
+[data-sota-app='diagram-app'] .dg-examples {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -123,7 +123,7 @@
   gap: 8px;
 }
 
-[data-sota-app='my-app'] .dg-link {
+[data-sota-app='diagram-app'] .dg-link {
   background: none;
   border: 0;
   color: inherit;
@@ -137,7 +137,7 @@
 
 /* ----------------------------------------------------------------- cards */
 
-[data-sota-app='my-app'].dg-card {
+[data-sota-app='diagram-app'].dg-card {
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 12px;
   display: flex;
@@ -146,14 +146,14 @@
   padding: 14px;
 }
 
-[data-sota-app='my-app'].dg-pending {
+[data-sota-app='diagram-app'].dg-pending {
   align-items: center;
   flex-direction: row;
   font-size: 13px;
   gap: 10px;
 }
 
-[data-sota-app='my-app'] .dg-header {
+[data-sota-app='diagram-app'] .dg-header {
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
@@ -161,19 +161,19 @@
   justify-content: space-between;
 }
 
-[data-sota-app='my-app'] .dg-header h3 {
+[data-sota-app='diagram-app'] .dg-header h3 {
   font-size: 15px;
   font-weight: 620;
   margin: 0;
 }
 
-[data-sota-app='my-app'] .dg-meta {
+[data-sota-app='diagram-app'] .dg-meta {
   align-items: center;
   display: flex;
   gap: 8px;
 }
 
-[data-sota-app='my-app'] .dg-counts {
+[data-sota-app='diagram-app'] .dg-counts {
   font-size: 12px;
   opacity: 0.68;
 }
@@ -186,7 +186,7 @@
  * from inverting it, and the border gives the sheet an edge against a dark
  * surface so it does not bleed into the page.
  */
-[data-sota-app='my-app'] .dg-canvas {
+[data-sota-app='diagram-app'] .dg-canvas {
   background: #ffffff;
   border: 1px solid rgba(15, 18, 22, 0.16);
   border-radius: 10px;
@@ -197,7 +197,7 @@
   padding: 10px;
 }
 
-[data-sota-app='my-app'] .dg-canvas-inner {
+[data-sota-app='diagram-app'] .dg-canvas-inner {
   display: flex;
   justify-content: center;
 }
@@ -207,7 +207,7 @@
  * scrollbar: this is a thumbnail of the file, and the file itself is the
  * artifact the reader opens for detail.
  */
-[data-sota-app='my-app'] .dg-canvas svg {
+[data-sota-app='diagram-app'] .dg-canvas svg {
   display: block;
   height: auto;
   max-height: 520px;
@@ -217,7 +217,7 @@
 
 /* --------------------------------------------------------------- actions */
 
-[data-sota-app='my-app'] .dg-actions {
+[data-sota-app='diagram-app'] .dg-actions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -225,16 +225,16 @@
 }
 
 /* Anchors styled as buttons still need to look like the buttons beside them. */
-[data-sota-app='my-app'] .dg-actions a {
+[data-sota-app='diagram-app'] .dg-actions a {
   text-decoration: none;
 }
 
-[data-sota-app='my-app'] .dg-hint {
+[data-sota-app='diagram-app'] .dg-hint {
   font-size: 12px;
   opacity: 0.66;
 }
 
-[data-sota-app='my-app'] .dg-placeholder {
+[data-sota-app='diagram-app'] .dg-placeholder {
   border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 10px;
   margin: 0;
@@ -244,39 +244,39 @@
 
 /* ------------------------------------------------------ warnings, errors */
 
-[data-sota-app='my-app'] .dg-warnings {
+[data-sota-app='diagram-app'] .dg-warnings {
   font-size: 12.5px;
 }
 
-[data-sota-app='my-app'] .dg-warnings summary {
+[data-sota-app='diagram-app'] .dg-warnings summary {
   cursor: pointer;
   opacity: 0.75;
 }
 
-[data-sota-app='my-app'] .dg-warnings ul,
-[data-sota-app='my-app'] .dg-error ul {
+[data-sota-app='diagram-app'] .dg-warnings ul,
+[data-sota-app='diagram-app'] .dg-error ul {
   margin: 8px 0 0;
   padding-left: 20px;
 }
 
-[data-sota-app='my-app'] .dg-warnings li,
-[data-sota-app='my-app'] .dg-error li {
+[data-sota-app='diagram-app'] .dg-warnings li,
+[data-sota-app='diagram-app'] .dg-error li {
   margin: 3px 0;
 }
 
-[data-sota-app='my-app'] .dg-error {
+[data-sota-app='diagram-app'] .dg-error {
   border: 1px solid color-mix(in srgb, #b85450 55%, transparent);
   border-radius: 10px;
   font-size: 13px;
   padding: 12px 14px;
 }
 
-[data-sota-app='my-app'] .dg-error strong {
+[data-sota-app='diagram-app'] .dg-error strong {
   display: block;
   margin-bottom: 4px;
 }
 
-[data-sota-app='my-app'] .dg-error p {
+[data-sota-app='diagram-app'] .dg-error p {
   margin: 0;
 }
 
@@ -286,7 +286,7 @@
  * Core places this panel and owns keyboard arbitration but draws no chrome, so
  * the border, padding and background all belong here.
  */
-[data-sota-app='my-app'].dg-composer {
+[data-sota-app='diagram-app'].dg-composer {
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 12px;
   display: flex;
@@ -295,14 +295,14 @@
   padding: 12px 14px;
 }
 
-[data-sota-app='my-app'] .dg-composer-group {
+[data-sota-app='diagram-app'] .dg-composer-group {
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-[data-sota-app='my-app'] .dg-composer-heading {
+[data-sota-app='diagram-app'] .dg-composer-heading {
   font-size: 11px;
   letter-spacing: 0.04em;
   min-width: 84px;
@@ -310,14 +310,14 @@
   text-transform: uppercase;
 }
 
-[data-sota-app='my-app'] .dg-composer-chips {
+[data-sota-app='diagram-app'] .dg-composer-chips {
   display: flex;
   flex: 1;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-[data-sota-app='my-app'] .dg-chip {
+[data-sota-app='diagram-app'] .dg-chip {
   background: color-mix(in srgb, currentColor 7%, transparent);
   border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
   border-radius: 999px;
@@ -328,15 +328,15 @@
   padding: 5px 12px;
 }
 
-[data-sota-app='my-app'] .dg-chip:hover {
+[data-sota-app='diagram-app'] .dg-chip:hover {
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
-[data-sota-app='my-app'] .dg-chip:focus-visible {
+[data-sota-app='diagram-app'] .dg-chip:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
-[data-sota-app='my-app'] .dg-chip-quiet {
+[data-sota-app='diagram-app'] .dg-chip-quiet {
   background: none;
 }

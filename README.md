@@ -1,4 +1,4 @@
-# my-app — Diagram Studio
+# Diagram App
 
 Generates **flowcharts**, **sequence diagrams**, and **ER diagrams** as editable
 draw.io files (`.drawio` / mxGraphModel XML). Every shape, label, and connector
@@ -96,7 +96,7 @@ sota validate
 
 ## Before deploying
 
-`service.baseUrl` and `health.url` are still the generated `https://my-app.invalid`
+`service.baseUrl` and `health.url` are still the generated `https://diagram-app.invalid`
 placeholders, so `sota validate` fails on `NON_ROUTABLE_DEPLOY_ENDPOINT`. Point
 them at the real hosted backend before `sota deploy`; the `environments.local`
 overlay already covers development.

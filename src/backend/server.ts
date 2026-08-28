@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { requireSotaInvocation } from './sota-auth.js';
 import { registerToolRoutes } from './tool-routes.js';
 
-const appId = 'my-app';
+const appId = 'diagram-app';
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
