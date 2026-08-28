@@ -1,0 +1,536 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Supply exactly one of `spec` (structured, full control) or `mermaid` (existing Mermaid source to convert).",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "description": "Diagram heading drawn on the page. Always set this to something specific (e.g. \"Simplest AWS serverless system\") - without it the diagram is left unheaded. Overrides any title inside `spec` or `mermaid`."
+    },
+    "fileName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Base name for the downloaded file. Slugified; a `.drawio` extension is always applied. Defaults to the title."
+    },
+    "mermaid": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "Mermaid source beginning with `flowchart <TB|BT|LR|RL>`, `graph <dir>`, `sequenceDiagram`, or `erDiagram`. Use this to convert Mermaid the user already has; use `spec` when authoring from scratch."
+    },
+    "spec": {
+      "description": "Structured diagram definition, as an OBJECT. The backend assigns all coordinates - never send positions. A JSON-encoded string of the same object is also accepted and parsed, but the object form gives you precise schema errors.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/flowchart"
+        },
+        {
+          "$ref": "#/$defs/sequence"
+        },
+        {
+          "$ref": "#/$defs/erd"
+        },
+        {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60000,
+          "description": "The same object, JSON-encoded. Accepted so a call that stringifies its nested argument still succeeds; the object form is preferred."
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "spec"
+      ]
+    },
+    {
+      "required": [
+        "mermaid"
+      ]
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Identifier referenced by edges. Not shown to the reader."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "flowchart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "nodes"
+      ],
+      "description": "Boxes and arrows: processes, decisions, terminators, optionally boxed into subgraphs.",
+      "properties": {
+        "type": {
+          "const": "flowchart"
+        },
+        "title": {
+          "$ref": "#/$defs/label"
+        },
+        "direction": {
+          "enum": [
+            "TB",
+            "BT",
+            "LR",
+            "RL"
+          ],
+          "default": "TB",
+          "description": "Reading direction. TB suits approval and decision flows; LR suits pipelines."
+        },
+        "groups": {
+          "type": "array",
+          "maxItems": 40,
+          "description": "Labelled frames. A node joins one by naming its id in `group`.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "$ref": "#/$defs/label"
+              },
+              "shape": {
+                "enum": [
+                  "process",
+                  "start",
+                  "end",
+                  "decision",
+                  "io",
+                  "document",
+                  "database",
+                  "subprocess",
+                  "manual",
+                  "note"
+                ],
+                "default": "process",
+                "description": "process = step; start/end = green/red terminators; decision = diamond (give its outgoing edges labels); io = input/output; database = store; subprocess = call-out; manual = manual step; note = annotation."
+              },
+              "group": {
+                "$ref": "#/$defs/id",
+                "description": "Id of a declared group this node belongs to."
+              },
+              "icon": {
+                "enum": [
+                  "acm",
+                  "api-gateway",
+                  "app-runner",
+                  "appsync",
+                  "athena",
+                  "aurora",
+                  "batch",
+                  "bedrock",
+                  "client",
+                  "cloudformation",
+                  "cloudfront",
+                  "cloudtrail",
+                  "cloudwatch",
+                  "codebuild",
+                  "codepipeline",
+                  "cognito",
+                  "comprehend",
+                  "direct-connect",
+                  "documentdb",
+                  "dynamodb",
+                  "ebs",
+                  "ec2",
+                  "ecr",
+                  "ecs",
+                  "efs",
+                  "eks",
+                  "elasticache",
+                  "elb",
+                  "emr",
+                  "eventbridge",
+                  "fargate",
+                  "fsx",
+                  "glacier",
+                  "glue",
+                  "iam",
+                  "internet-gateway",
+                  "kinesis",
+                  "kms",
+                  "lambda",
+                  "lightsail",
+                  "mobile-client",
+                  "mq",
+                  "nat-gateway",
+                  "neptune",
+                  "opensearch",
+                  "quicksight",
+                  "rds",
+                  "redshift",
+                  "rekognition",
+                  "route53",
+                  "s3",
+                  "sagemaker",
+                  "secrets-manager",
+                  "shield",
+                  "sns",
+                  "sqs",
+                  "step-functions",
+                  "storage-gateway",
+                  "systems-manager",
+                  "textract",
+                  "user",
+                  "users",
+                  "vpc",
+                  "waf"
+                ],
+                "description": "Draw this node as the official AWS service icon, with its label beneath. Overrides `shape`. Use these for AWS architecture diagrams — they read far better than plain boxes."
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "maxItems": 400,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 240,
+                "description": "Condition or trigger, e.g. \"yes\" / \"on failure\"."
+              },
+              "line": {
+                "enum": [
+                  "solid",
+                  "dashed",
+                  "thick"
+                ],
+                "default": "solid"
+              },
+              "arrow": {
+                "enum": [
+                  "arrow",
+                  "open",
+                  "none",
+                  "cross",
+                  "circle"
+                ],
+                "default": "arrow"
+              }
+            }
+          }
+        }
+      }
+    },
+    "sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "participants"
+      ],
+      "description": "Lifelines exchanging ordered messages over time.",
+      "properties": {
+        "type": {
+          "const": "sequence"
+        },
+        "title": {
+          "$ref": "#/$defs/label"
+        },
+        "participants": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 40,
+          "description": "Columns, left to right. Order them to minimise crossing messages.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "$ref": "#/$defs/label"
+              },
+              "kind": {
+                "enum": [
+                  "participant",
+                  "actor"
+                ],
+                "default": "participant",
+                "description": "`actor` draws a stick figure; use it for humans."
+              }
+            }
+          }
+        },
+        "messages": {
+          "type": "array",
+          "maxItems": 200,
+          "description": "Drawn top to bottom in array order.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to",
+              "label"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "line": {
+                "enum": [
+                  "solid",
+                  "dashed"
+                ],
+                "default": "solid",
+                "description": "Use `dashed` for returns and replies."
+              },
+              "arrow": {
+                "enum": [
+                  "arrow",
+                  "open",
+                  "none",
+                  "cross",
+                  "async"
+                ],
+                "default": "arrow"
+              },
+              "activate": {
+                "type": "boolean",
+                "description": "Open an activation bar on the receiving lifeline."
+              },
+              "deactivate": {
+                "type": "boolean",
+                "description": "Close the innermost activation bar on the sending lifeline."
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "maxItems": 60,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "participants",
+              "text"
+            ],
+            "properties": {
+              "afterIndex": {
+                "type": "integer",
+                "minimum": -1,
+                "description": "Index in `messages` this note follows. -1 pins it above the first message. Defaults to the last message."
+              },
+              "placement": {
+                "enum": [
+                  "left",
+                  "right",
+                  "over"
+                ],
+                "default": "right"
+              },
+              "participants": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "description": "One participant, or two to span a note across them with `over`."
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
+              }
+            }
+          }
+        }
+      }
+    },
+    "erd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "entities"
+      ],
+      "description": "Entities with typed attributes, joined by crow's-foot relationships.",
+      "properties": {
+        "type": {
+          "const": "erd"
+        },
+        "title": {
+          "$ref": "#/$defs/label"
+        },
+        "entities": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "$ref": "#/$defs/label",
+                "description": "Displayed name. Defaults to the id."
+              },
+              "fields": {
+                "type": "array",
+                "maxItems": 40,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 240
+                    },
+                    "type": {
+                      "type": "string",
+                      "maxLength": 240,
+                      "description": "Data type as you want it printed, e.g. \"uuid\", \"text\"."
+                    },
+                    "key": {
+                      "enum": [
+                        "PK",
+                        "FK",
+                        "UK",
+                        "none"
+                      ],
+                      "default": "none",
+                      "description": "Marker shown before the attribute name."
+                    },
+                    "comment": {
+                      "type": "string",
+                      "maxLength": 240,
+                      "description": "Hover text in draw.io. Not drawn on the page."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "fromCardinality": {
+                "$ref": "#/$defs/cardinality",
+                "default": "one"
+              },
+              "toCardinality": {
+                "$ref": "#/$defs/cardinality",
+                "default": "zero-or-many"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 240,
+                "description": "Verb phrase read from `from` to `to`, e.g. \"places\"."
+              },
+              "identifying": {
+                "type": "boolean",
+                "default": true,
+                "description": "false draws a dashed line for a non-identifying relationship."
+              }
+            }
+          }
+        }
+      }
+    },
+    "cardinality": {
+      "enum": [
+        "one",
+        "zero-or-one",
+        "one-or-many",
+        "zero-or-many",
+        "many"
+      ],
+      "description": "Crow's-foot multiplicity at one end of a relationship."
+    }
+  }
+}

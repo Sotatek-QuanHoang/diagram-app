@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ok",
+    "kind",
+    "title",
+    "fileName",
+    "mimeType",
+    "preview",
+    "stats",
+    "warnings",
+    "summary"
+  ],
+  "description": "`preview` is renderer-only and is projected out of model context. The .drawio file is assembled in the UI from `preview` and offered to the reader as a download; it is deliberately not returned here. Read `summary`, `stats`, and `warnings`.",
+  "properties": {
+    "ok": {
+      "const": true
+    },
+    "kind": {
+      "enum": [
+        "flowchart",
+        "sequence",
+        "erd"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "Heading drawn on the diagram."
+    },
+    "fileName": {
+      "type": "string",
+      "description": "Suggested download name; always ends in `.drawio`."
+    },
+    "mimeType": {
+      "const": "application/vnd.jgraph.mxfile"
+    },
+    "preview": {
+      "$ref": "#/$defs/scene",
+      "description": "Resolved geometry. The native renderer draws the SVG preview from it and builds the .drawio file from it on download."
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nodes",
+        "edges",
+        "groups"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Nodes, participants, or entities depending on `kind`."
+        },
+        "edges": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Edges, messages, or relationships depending on `kind`."
+        },
+        "groups": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Subgraphs, notes, or total attributes depending on `kind`."
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Input that was skipped or approximated — most often unsupported Mermaid lines. The diagram was still produced; mention these to the user."
+    },
+    "summary": {
+      "type": "string",
+      "description": "One-line description of what was generated."
+    },
+    "_sota": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Platform model-projection envelope."
+    }
+  },
+  "$defs": {
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "title",
+        "width",
+        "height",
+        "shapes",
+        "edges"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "flowchart",
+            "sequence",
+            "erd"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "shapes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "geom",
+              "x",
+              "y",
+              "w",
+              "h",
+              "label",
+              "labelLines",
+              "fill",
+              "stroke",
+              "fontColor",
+              "fontSize"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "geom": {
+                "enum": [
+                  "rect",
+                  "rounded",
+                  "stadium",
+                  "ellipse",
+                  "rhombus",
+                  "hexagon",
+                  "parallelogram",
+                  "cylinder",
+                  "document",
+                  "note",
+                  "group",
+                  "lifeline",
+                  "actorLifeline",
+                  "activation",
+                  "table",
+                  "tableRow"
+                ]
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "w": {
+                "type": "number"
+              },
+              "h": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string"
+              },
+              "labelLines": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "parent": {
+                "type": "string"
+              },
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "fontColor": {
+                "type": "string"
+              },
+              "fontSize": {
+                "type": "number"
+              },
+              "bold": {
+                "type": "boolean"
+              },
+              "dashed": {
+                "type": "boolean"
+              },
+              "align": {
+                "enum": [
+                  "center",
+                  "left"
+                ]
+              },
+              "verticalAlign": {
+                "enum": [
+                  "middle",
+                  "top"
+                ]
+              },
+              "headerHeight": {
+                "type": "number"
+              },
+              "tooltip": {
+                "type": "string"
+              },
+              "drawioStyle": {
+                "type": "string",
+                "description": "Inline style; superseded by `styleId` and the `styles` table."
+              },
+              "styleId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Index into `styles`."
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "route",
+              "stroke",
+              "startArrow",
+              "endArrow"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "route": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/point"
+                }
+              },
+              "labelAt": {
+                "$ref": "#/$defs/point"
+              },
+              "labelAnchor": {
+                "enum": [
+                  "middle",
+                  "start"
+                ]
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "dashed": {
+                "type": "boolean"
+              },
+              "thick": {
+                "type": "boolean"
+              },
+              "startArrow": {
+                "$ref": "#/$defs/arrow"
+              },
+              "endArrow": {
+                "$ref": "#/$defs/arrow"
+              },
+              "drawioStyle": {
+                "type": "string",
+                "description": "Inline style; superseded by `styleId` and the `styles` table."
+              },
+              "styleId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Index into `styles`."
+              }
+            }
+          }
+        },
+        "styles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "De-duplicated mxGraph style strings, indexed by each cell's `styleId`."
+        }
+      }
+    },
+    "arrow": {
+      "enum": [
+        "none",
+        "arrow",
+        "open",
+        "cross",
+        "circle",
+        "ERone",
+        "ERmandOne",
+        "ERzeroToOne",
+        "ERoneToMany",
+        "ERzeroToMany"
+      ]
+    }
+  }
+}

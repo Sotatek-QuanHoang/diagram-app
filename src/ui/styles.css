@@ -1,30 +1,342 @@
-[data-sota-app="my-app"].starter-root {
+/*
+ * Scoped to the app root so nothing here can reach host chrome. Colours inherit
+ * from the host theme, with one deliberate exception: the diagram canvas is
+ * always white, because it is a preview of a document whose page is white in
+ * draw.io.
+ */
+
+[data-sota-app='my-app'].dg-root {
   box-sizing: border-box;
-  color: var(--foreground, #15171a);
+  color: inherit;
   font-family: inherit;
 }
 
-[data-sota-app="my-app"].starter-page {
-  min-height: 100%;
-  padding: 32px;
+[data-sota-app='my-app'] *,
+[data-sota-app='my-app'] *::before,
+[data-sota-app='my-app'] *::after {
+  box-sizing: border-box;
 }
 
-[data-sota-app="my-app"] .starter-eyebrow {
-  color: #1267e5;
+[data-sota-app='my-app'] .dg-muted {
+  color: color-mix(in srgb, currentColor 62%, transparent);
+}
+
+/* ------------------------------------------------------------------ page */
+
+[data-sota-app='my-app'].dg-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100%;
+  padding: 28px;
+}
+
+[data-sota-app='my-app'] .dg-page-header h1 {
+  font-size: 22px;
+  font-weight: 650;
+  margin: 0 0 6px;
+}
+
+[data-sota-app='my-app'] .dg-page-header p {
+  margin: 0;
+  max-width: 68ch;
+}
+
+[data-sota-app='my-app'] .dg-columns {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(300px, 2fr) minmax(320px, 3fr);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  [data-sota-app='my-app'] .dg-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+[data-sota-app='my-app'] .dg-editor,
+[data-sota-app='my-app'] .dg-output {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------- editor */
+
+[data-sota-app='my-app'] .dg-modes {
+  display: flex;
+  gap: 4px;
+}
+
+[data-sota-app='my-app'] .dg-mode {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  opacity: 0.66;
+  padding: 6px 12px;
+}
+
+[data-sota-app='my-app'] .dg-mode:hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+[data-sota-app='my-app'] .dg-mode-on {
+  border-color: color-mix(in srgb, currentColor 20%, transparent);
+  font-weight: 600;
+  opacity: 1;
+}
+
+[data-sota-app='my-app'] .dg-mode:focus-visible,
+[data-sota-app='my-app'] .dg-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+[data-sota-app='my-app'] textarea.dg-source {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  min-height: 340px;
+  resize: vertical;
+  white-space: pre;
+}
+
+[data-sota-app='my-app'] .dg-editor-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+[data-sota-app='my-app'] .dg-examples {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 8px;
+}
+
+[data-sota-app='my-app'] .dg-link {
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ----------------------------------------------------------------- cards */
+
+[data-sota-app='my-app'].dg-card {
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+[data-sota-app='my-app'].dg-pending {
+  align-items: center;
+  flex-direction: row;
+  font-size: 13px;
+  gap: 10px;
+}
+
+[data-sota-app='my-app'] .dg-header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+[data-sota-app='my-app'] .dg-header h3 {
+  font-size: 15px;
+  font-weight: 620;
+  margin: 0;
+}
+
+[data-sota-app='my-app'] .dg-meta {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+[data-sota-app='my-app'] .dg-counts {
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .14em;
+  opacity: 0.68;
+}
+
+/* ---------------------------------------------------------------- canvas */
+
+/*
+ * The canvas is a sheet of paper, not a themed panel. `color-scheme: light`
+ * plus an explicit background and `filter: none` keep a host dark-mode pass
+ * from inverting it, and the border gives the sheet an edge against a dark
+ * surface so it does not bleed into the page.
+ */
+[data-sota-app='my-app'] .dg-canvas {
+  background: #ffffff;
+  border: 1px solid rgba(15, 18, 22, 0.16);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(15, 18, 22, 0.18);
+  color-scheme: light;
+  filter: none;
+  overflow: auto;
+  padding: 10px;
+}
+
+[data-sota-app='my-app'] .dg-canvas-inner {
+  display: flex;
+  justify-content: center;
+}
+
+/*
+ * Scale the whole diagram down to fit rather than cropping it behind a
+ * scrollbar: this is a thumbnail of the file, and the file itself is the
+ * artifact the reader opens for detail.
+ */
+[data-sota-app='my-app'] .dg-canvas svg {
+  display: block;
+  height: auto;
+  max-height: 520px;
+  max-width: 100%;
+  width: auto;
+}
+
+/* --------------------------------------------------------------- actions */
+
+[data-sota-app='my-app'] .dg-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Anchors styled as buttons still need to look like the buttons beside them. */
+[data-sota-app='my-app'] .dg-actions a {
+  text-decoration: none;
+}
+
+[data-sota-app='my-app'] .dg-hint {
+  font-size: 12px;
+  opacity: 0.66;
+}
+
+[data-sota-app='my-app'] .dg-placeholder {
+  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 10px;
+  margin: 0;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+/* ------------------------------------------------------ warnings, errors */
+
+[data-sota-app='my-app'] .dg-warnings {
+  font-size: 12.5px;
+}
+
+[data-sota-app='my-app'] .dg-warnings summary {
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+[data-sota-app='my-app'] .dg-warnings ul,
+[data-sota-app='my-app'] .dg-error ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+[data-sota-app='my-app'] .dg-warnings li,
+[data-sota-app='my-app'] .dg-error li {
+  margin: 3px 0;
+}
+
+[data-sota-app='my-app'] .dg-error {
+  border: 1px solid color-mix(in srgb, #b85450 55%, transparent);
+  border-radius: 10px;
+  font-size: 13px;
+  padding: 12px 14px;
+}
+
+[data-sota-app='my-app'] .dg-error strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+[data-sota-app='my-app'] .dg-error p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------- composer panel */
+
+/*
+ * Core places this panel and owns keyboard arbitration but draws no chrome, so
+ * the border, padding and background all belong here.
+ */
+[data-sota-app='my-app'].dg-composer {
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+[data-sota-app='my-app'] .dg-composer-group {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+[data-sota-app='my-app'] .dg-composer-heading {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  min-width: 84px;
+  opacity: 0.6;
   text-transform: uppercase;
 }
 
-[data-sota-app="my-app"].starter-result {
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-  border-radius: 12px;
-  padding: 16px;
+[data-sota-app='my-app'] .dg-composer-chips {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-[data-sota-app="my-app"] pre {
-  margin: 12px 0 0;
-  overflow: auto;
-  white-space: pre-wrap;
+[data-sota-app='my-app'] .dg-chip {
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 999px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 12px;
+}
+
+[data-sota-app='my-app'] .dg-chip:hover {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+[data-sota-app='my-app'] .dg-chip:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+[data-sota-app='my-app'] .dg-chip-quiet {
+  background: none;
 }

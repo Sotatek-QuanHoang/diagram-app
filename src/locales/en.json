@@ -1,4 +1,19 @@
 {
-  "admin.title": "Admin screen",
-  "tool.result.title": "Example result"
+  "studio.title": "Diagram studio",
+  "studio.subtitle": "Draft a diagram and download it as an editable .drawio file.",
+  "studio.tab.mermaid": "Mermaid",
+  "studio.tab.spec": "Spec (JSON)",
+  "studio.generate": "Generate",
+  "studio.download": "Download",
+  "studio.copy": "Copy XML",
+  "studio.copied": "Copied",
+  "studio.empty": "Write a diagram on the left, then generate.",
+  "studio.error": "Could not generate the diagram",
+  "result.title": "Diagram",
+  "result.drafting": "Composing diagram…",
+  "result.running": "Generating diagram…",
+  "result.warnings": "Warnings",
+  "result.failed": "Diagram generation failed",
+  "result.open": "Open in draw.io",
+  "result.tooLarge": "Too large to open straight from a link — download it and open the file in draw.io."
 }

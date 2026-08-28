@@ -1,51 +1,77 @@
 manifestSchemaVersion: 3
 appId: my-app
 version: 1.0.0
-displayName: "My App"
-description: "SotaAgent app."
+displayName: "Diagram Studio"
+description: "Generates flowcharts, sequence diagrams, and ER diagrams as editable draw.io (.drawio) files."
 publisher:
   id: local-dev
   displayName: "Local Dev"
   contact: dev@local-dev.example
 contributes:
   skills:
-    - name: example
-      description: Example content-backed skill.
+    - name: drawio-diagrams
+      description: How to author diagrams for the generate-diagram tool and how to read its result.
       appendsTo: system
-      content: src/skills/example
+      content: src/skills/drawio-diagrams
       timeoutMs: 3000
       failure_mode: skip
   tools:
-    - name: example
-      description: Example tool that echoes its input and verified tenant context.
-      route: POST /tools/example
-      inputSchema: src/schemas/tool-input.schema.json
-      outputSchema: src/schemas/tool-output.schema.json
+    - name: generate-diagram
+      description: >-
+        Build a flowchart, sequence diagram, or ER diagram and return it as a complete,
+        editable draw.io (.drawio) file that the user downloads from the rendered result.
+        Send either a structured `spec` OBJECT (nodes/edges, participants/messages, or
+        entities/relationships) or existing `mermaid` source to convert — never coordinates;
+        layout and routing are computed here. Always pass `title`. Flowchart nodes accept an
+        `icon` key naming an AWS service, which draws the official AWS icon instead of a box —
+        use it for any AWS architecture diagram. Returns a one-line summary, element counts, and
+        a `warnings` list naming any input that was skipped or approximated, which you should
+        pass on to the user. Call this whenever a diagram, process chart, or data model is
+        asked for, or when a .drawio/diagrams.net file is requested.
+      route: POST /tools/generate-diagram
+      inputSchema: src/schemas/generate-diagram-input.schema.json
+      outputSchema: src/schemas/generate-diagram-output.schema.json
       timeoutMs: 15000
       failure_mode: abort
+      searchHint: diagram drawio draw.io diagrams.net flowchart sequence erd entity relationship mermaid chart
+  slashCommands:
+    - verb: diagram
+      scope: workspace
+      description: Start a diagram of a system, flow, or data model.
+      argumentHint: what to draw
+      mode: insert-only
   ui:
-    - id: admin-screen
+    - id: diagram-composer-panel
+      kind: nativeModule
+      surface: composer-panel
+      slot: chat.composer.panel
+      label: Diagram starters
+      module:
+        entry: dist/ui/app.js
+        export: DiagramComposerPanel
+        styles: dist/ui/app.css
+    - id: diagram-studio
       kind: nativeModule
       surface: page
       slot: admin.workspace.tab
       sectionId: my-app
-      label: Admin screen
+      label: Diagram studio
       route: /my-app/*
       module:
         entry: dist/ui/app.js
-        export: AdminScreen
+        export: DiagramStudio
         styles: dist/ui/app.css
-    - id: example-tool-result
+    - id: diagram-result
       kind: nativeModule
       surface: tool-view
       slot: chat.message.inline.below
-      label: Example result
+      label: Diagram
       toolNames:
-        - example
+        - generate-diagram
       renderBeforeOutput: true
       module:
         entry: dist/ui/app.js
-        export: ExampleToolResult
+        export: DiagramToolResult
         styles: dist/ui/app.css
 service:
   baseUrl: https://my-app.invalid
