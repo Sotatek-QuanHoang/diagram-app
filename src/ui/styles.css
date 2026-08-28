@@ -340,3 +340,26 @@
 [data-sota-app='diagram-app'] .dg-chip-quiet {
   background: none;
 }
+
+/* ----------------------------------------------------------- side panel */
+
+/*
+ * The artifact panel is taller than it is wide, so the preview gets more room
+ * than it does inline and the sheet fills the available width.
+ */
+[data-sota-app='diagram-app'].dg-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  padding: 16px;
+}
+
+[data-sota-app='diagram-app'].dg-panel .dg-canvas {
+  flex: 1;
+  min-height: 0;
+}
+
+[data-sota-app='diagram-app'].dg-panel .dg-canvas svg {
+  max-height: none;
+}

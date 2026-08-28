@@ -61,6 +61,17 @@ contributes:
         entry: dist/ui/app.js
         export: DiagramStudio
         styles: dist/ui/app.css
+    - id: diagram-artifact
+      kind: nativeModule
+      surface: artifact
+      slot: artifact.slot.diagram
+      artifactKind: diagram
+      label: Diagram
+      retainContextWhenHidden: true
+      module:
+        entry: dist/ui/app.js
+        export: DiagramArtifact
+        styles: dist/ui/app.css
     - id: diagram-result
       kind: nativeModule
       surface: tool-view

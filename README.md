@@ -13,6 +13,7 @@ stays individually editable after the file is opened.
 | `/diagram` | slash command | `insert-only` — types a starting point into the message box, dispatches nothing on its own. |
 | Diagram starters | UI composer-panel | Appears while the draft contains `/diagram`; swaps the token for a ready-to-send prompt. |
 | Diagram studio | UI page | `admin.workspace.tab` — paste Mermaid or JSON, preview, download. |
+| Diagram panel | UI artifact | Opens in the side panel when a diagram finishes, and from the card's **Open in side panel** button. |
 | Diagram result | UI tool-view | Renders the diagram inline under the tool call: **Download .drawio**, **Open in draw.io**, **Copy XML**. |
 
 ## How it works
@@ -68,6 +69,26 @@ Source map, all under `src/backend/diagram/`:
 
 `src/ui/diagram-svg.ts` (SVG preview) and `src/ui/drawio.ts` (mxGraphModel XML)
 both run in the browser and import only *types* from the backend.
+
+## The side panel
+
+A finished diagram opens in the artifact side panel automatically — but only
+when the tool-view surface *watched* it finish. Mounting straight into
+`output-available`, which is what scrolling back through history does, never
+opens the panel; otherwise scrolling past an old diagram would hijack it. Each
+tool call opens at most once per session, and the card's **Open in side panel**
+button works whenever you want it.
+
+The artifact surface is not covered by the pinned references. The manifest shape
+(`surface: artifact`, `slot: artifact.slot.diagram`, `artifactKind`) is correct —
+the panel mounts — but the `context` given to `ui.openArtifact` does not reach
+the module's props, which arrive empty.
+
+So the diagram is handed over twice. It goes into the `openArtifact` context
+*and* into `artifact-store.ts`, a module both surfaces share because they are
+components in one bundle. The panel looks for it by token, then anywhere in its
+props, then in that store. If the host ever starts forwarding the context, the
+props path wins and the store is simply unused.
 
 ## Quick access
 

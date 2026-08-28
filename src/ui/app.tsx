@@ -1,9 +1,16 @@
 import './styles.css';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAppFetch, type ToolResultSurfaceProps } from '@sota/platform';
+import { useAppContext, useAppFetch, type ToolResultSurfaceProps } from '@sota/platform';
 import { Badge, Button, Spinner, Textarea } from '@sota/platform/ui';
 
+import {
+  describeShape,
+  findDiagram,
+  findToken,
+  recallDiagram,
+  rememberDiagram,
+} from './artifact-store.js';
 import { DiagramComposerPanel } from './composer-panel.js';
 import { sceneToSvg } from './diagram-svg.js';
 import { sceneToDrawio } from './drawio.js';
@@ -146,6 +153,23 @@ function readResult(
   return typeof candidate.kind === 'string' ? candidate : undefined;
 }
 
+/** Header, preview, actions and warnings — identical wherever a diagram shows. */
+function DiagramBody({ result }: { result: DiagramResult }) {
+  const hasPreview = Boolean(result.preview?.shapes?.length);
+  return (
+    <>
+      <header className="dg-header">
+        <h3>{result.title || KIND_LABELS[result.kind] || 'Diagram'}</h3>
+        <DiagramMeta result={result} />
+      </header>
+      {hasPreview ? <DiagramPreview result={result} /> : null}
+      {!hasPreview && result.summary ? <p className="dg-muted">{result.summary}</p> : null}
+      {hasPreview ? <DiagramActions result={result} /> : null}
+      <Warnings warnings={result.warnings ?? []} />
+    </>
+  );
+}
+
 function Warnings({ warnings }: { warnings: string[] }) {
   if (warnings.length === 0) return null;
   return (
@@ -184,6 +208,10 @@ export function DiagramToolResult({
   toolResult,
 }: ToolResultSurfaceProps<GenerateInput, DiagramResult>) {
   const { state } = toolResult;
+  // Read and subscribe before any branch: hooks cannot sit behind an early
+  // return, and the panel guard must see the pending states too.
+  const result = readResult(toolResult);
+  const openInPanel = useOpenInPanel(state, toolResult.toolCallId, result);
 
   if (state === 'input-streaming' || state === 'input-available') {
     // Mounted while the model is still writing its arguments, so every field
@@ -217,7 +245,6 @@ export function DiagramToolResult({
     );
   }
 
-  const result = readResult(toolResult);
   if (!result) {
     // Older stored results, or a payload the renderer does not understand:
     // degrade rather than throw — the plain tool result is still readable.
@@ -228,20 +255,93 @@ export function DiagramToolResult({
     );
   }
 
-  // The preview and the file are shown independently: if one of them did not
-  // survive the round trip, the other is still worth having.
-  const hasPreview = Boolean(result.preview?.shapes?.length);
-
   return (
     <section className="dg-root dg-card" data-sota-app="diagram-app">
-      <header className="dg-header">
-        <h3>{result.title || KIND_LABELS[result.kind] || 'Diagram'}</h3>
-        <DiagramMeta result={result} />
-      </header>
-      {hasPreview ? <DiagramPreview result={result} /> : null}
-      {!hasPreview && result.summary ? <p className="dg-muted">{result.summary}</p> : null}
-      {hasPreview ? <DiagramActions result={result} /> : null}
-      <Warnings warnings={result.warnings ?? []} />
+      <DiagramBody result={result} />
+      <div className="dg-actions">
+        <Button size="sm" variant="outline" onClick={openInPanel}>
+          Open in side panel
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+/** Tool calls that already opened the panel, so a remount cannot reopen one. */
+const opened = new Set<string>();
+
+/**
+ * Opens the side panel when a diagram finishes, and returns a manual opener.
+ *
+ * This has to be called from the surface that stays mounted across every state:
+ * a component rendered only once the result exists can never observe the
+ * transition into it, and would either never fire or fire on every scroll-back.
+ *
+ * The panel opens only when this mount *watched* the state change. History
+ * mounts straight into `output-available`, and hijacking the panel for a diagram
+ * someone scrolled past would be obnoxious.
+ */
+function useOpenInPanel(
+  state: string,
+  toolCallId: string,
+  result: DiagramResult | undefined,
+): () => void {
+  const { ui } = useAppContext();
+  const previous = useRef<string | undefined>(undefined);
+  const latest = useRef(result);
+  latest.current = result;
+
+  const open = useCallback(() => {
+    const result = latest.current;
+    if (!result) return;
+    // Handed over twice: through the context, and through the shared module in
+    // case the context does not reach the surface.
+    const token = rememberDiagram(result);
+    ui.openArtifact(ARTIFACT_KIND, { token, result } as unknown as Record<string, unknown>);
+  }, [ui]);
+
+  useEffect(() => {
+    const watchedItFinish = previous.current !== undefined && previous.current !== state;
+    previous.current = state;
+    if (state !== 'output-available' || !watchedItFinish || !result) return;
+    if (opened.has(toolCallId)) return;
+    opened.add(toolCallId);
+    open();
+  }, [state, toolCallId, result, open]);
+
+  return open;
+}
+
+/* --------------------------------------------------------------- artifact */
+
+const ARTIFACT_KIND = 'diagram';
+
+/**
+ * The side-panel view.
+ *
+ * The host's prop shape for an artifact surface is not pinned by the published
+ * contract, so the diagram is looked for in three ways before giving up: by the
+ * token the opener passed, anywhere inside the props, and finally from the
+ * module the opener shares with this surface.
+ */
+export function DiagramArtifact(props: unknown) {
+  const result = findDiagram(props) ?? recallDiagram(findToken(props));
+
+  if (!result) {
+    return (
+      <section className="dg-root dg-panel" data-sota-app="diagram-app">
+        <p className="dg-muted">No diagram to show. Generate one, or reopen it from its card.</p>
+        <details className="dg-warnings">
+          <summary>Surface details</summary>
+          <pre>{describeShape(props)}</pre>
+        </details>
+      </section>
+    );
+  }
+
+  return (
+    <section className="dg-root dg-panel" data-sota-app="diagram-app">
+      <DiagramBody result={result} />
     </section>
   );
 }
@@ -371,13 +471,7 @@ export function DiagramStudio() {
           ) : null}
           {result ? (
             <>
-              <header className="dg-header">
-                <h3>{result.title || KIND_LABELS[result.kind] || 'Diagram'}</h3>
-                <DiagramMeta result={result} />
-              </header>
-              <DiagramPreview result={result} />
-              <DiagramActions result={result} />
-              <Warnings warnings={result.warnings ?? []} />
+              <DiagramBody result={result} />
             </>
           ) : error ? null : (
             <p className="dg-muted dg-placeholder">
@@ -392,4 +486,9 @@ export function DiagramStudio() {
 
 export { DiagramComposerPanel };
 
-export const surfaces = { DiagramStudio, DiagramToolResult, DiagramComposerPanel };
+export const surfaces = {
+  DiagramStudio,
+  DiagramToolResult,
+  DiagramComposerPanel,
+  DiagramArtifact,
+};
