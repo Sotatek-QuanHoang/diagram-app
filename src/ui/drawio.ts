@@ -140,9 +140,9 @@ function shapeCell(shape: SceneShape, scene: Scene, ids: CellIds): string {
   const y = Math.round(shape.y - (parentShape?.y ?? 0));
 
   const style = shapeStyle(shape, scene);
-  // An AWS icon cell is only the square tile; draw.io renders its label beneath,
-  // in the space the layout already reserved.
-  const tile = shape.geom === 'awsIcon' ? (shape.headerHeight ?? shape.w) : undefined;
+  // A cloud icon cell is only the square tile; draw.io renders its label
+  // beneath, in the space the layout already reserved.
+  const tile = shape.geom === 'cloudIcon' ? (shape.headerHeight ?? shape.w) : undefined;
   const box = tile
     ? { x: Math.round(x + (shape.w - tile) / 2), y: Math.round(y), w: tile, h: tile }
     : { x, y, w: Math.round(shape.w), h: Math.round(shape.h) };

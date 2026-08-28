@@ -8,7 +8,15 @@
  * implementation rather than four.
  */
 
-import { AWS_LABEL_GAP, AWS_TILE, AWS_CATEGORY_COLOR, awsIconStyle, awsService } from './aws.js';
+import {
+  AWS_CATEGORY_COLOR,
+  ICON_LABEL_GAP,
+  ICON_TILE,
+  PROVIDER_TINT,
+  cloudIconStyle,
+  cloudService,
+  shapeId,
+} from './clouds.js';
 import { MARGIN, TITLE_SPACE, finalize, labelPointFor } from './layout-common.js';
 import { snap, wrapLabel } from './text.js';
 import {
@@ -116,24 +124,24 @@ export function layoutFlowchart(spec: FlowchartSpec): Scene {
 function sizeNodes(spec: FlowchartSpec): Box[] {
   const vertical = spec.direction === 'TB' || spec.direction === 'BT';
   return spec.nodes.map((node, index) => {
-    const service = node.icon ? awsService(node.icon) : undefined;
+    const service = node.icon ? cloudService(node.icon) : undefined;
     const style = flowShapeStyle(node.shape);
     // An icon node is a fixed square tile with its label underneath, so its
     // footprint is the wider of the two and tall enough for both.
-    const maxLabel = service ? Math.max(MAX_LABEL_WIDTH, AWS_TILE + 60) : MAX_LABEL_WIDTH;
+    const maxLabel = service ? Math.max(MAX_LABEL_WIDTH, ICON_TILE + 60) : MAX_LABEL_WIDTH;
     const wrapped = wrapLabel(node.label, FONT_SIZE, maxLabel);
-    const labelBand = service ? AWS_LABEL_GAP + wrapped.height + 4 : 0;
+    const labelBand = service ? ICON_LABEL_GAP + wrapped.height + 4 : 0;
     const w = service
-      ? snap(Math.max(AWS_TILE, wrapped.width + 12))
+      ? snap(Math.max(ICON_TILE, wrapped.width + 12))
       : snap(Math.max(style.minWidth, wrapped.width + style.padX));
     const h = service
-      ? snap(AWS_TILE + labelBand)
+      ? snap(ICON_TILE + labelBand)
       : snap(Math.max(style.minHeight, wrapped.height + style.padY));
     return {
       id: node.id,
       label: node.label,
       lines: wrapped.lines,
-      tile: service ? AWS_TILE : undefined,
+      tile: service ? ICON_TILE : undefined,
       labelBand: service ? labelBand : undefined,
       w,
       h,
@@ -633,21 +641,27 @@ function buildNodeShape(spec: FlowchartSpec, box: Box, groups: SceneShape[]): Sc
     fontSize: FONT_SIZE,
   };
 
-  const service = node.icon ? awsService(node.icon) : undefined;
+  const service = node.icon ? cloudService(node.icon) : undefined;
   if (service && box.tile) {
-    const fill = AWS_CATEGORY_COLOR[service.category];
+    // AWS sets its glyph on a category-coloured tile; Azure and Google draw the
+    // glyph itself, so those get no tile and the glyph takes the brand tint.
+    const tiled = service.provider === 'aws';
+    // `fill` is what draw.io paints: the tile for AWS, the glyph itself for the
+    // others. `fillColor=none` there would render an invisible icon.
     return {
       ...common,
-      geom: 'awsIcon',
-      fill,
+      geom: 'cloudIcon',
+      iconTile: tiled,
+      fill: tiled ? AWS_CATEGORY_COLOR[service.category] : PROVIDER_TINT[service.provider],
       stroke: 'none',
       fontColor: PALETTE.ink,
       align: 'center',
       verticalAlign: 'top',
       headerHeight: box.tile,
       serviceName: service.name,
-      resIcon: service.resIcon,
-      drawioStyle: awsIconStyle(service),
+      shapeId: shapeId(service),
+      tint: tiled ? '#ffffff' : PROVIDER_TINT[service.provider],
+      drawioStyle: cloudIconStyle(service),
     };
   }
 

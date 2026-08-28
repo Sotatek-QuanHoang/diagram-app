@@ -51,28 +51,32 @@ the remaining stationery.
 
 Label every edge leaving a `decision` — an unlabelled diamond is unreadable.
 
-### AWS diagrams
+### Cloud architecture diagrams
 
-For anything on AWS, set `icon` on the node instead of leaning on `shape`. It
-draws the official AWS service icon in its category colour with the label
-underneath — in the inline preview and in the downloaded file alike. That is the
-look people expect from an architecture diagram, and far clearer than a grid of
-identical boxes.
+For anything on AWS, Azure, or Google Cloud, set `icon` on the node instead of
+leaning on `shape`. It draws that provider's official service icon with the
+label underneath — in the inline preview and in the downloaded file alike. That
+is the look people expect from an architecture diagram, and far clearer than a
+grid of identical boxes.
+
+Keys are prefixed by provider, because service names collide across clouds:
 
 ```json
-{ "id": "api", "label": "Orders API", "icon": "api-gateway" }
-{ "id": "fn",  "label": "Order handler", "icon": "lambda" }
-{ "id": "db",  "label": "Orders table", "icon": "dynamodb" }
+{ "id": "api", "label": "Orders API",    "icon": "aws-api-gateway" }
+{ "id": "fn",  "label": "Order handler", "icon": "azure-functions" }
+{ "id": "wh",  "label": "Warehouse",     "icon": "gcp-bigquery" }
 ```
 
-Keep `label` about the node's *role* in this system ("Order handler"), not the
-service name — the icon already says "Lambda". `shape` is ignored when `icon`
-is set. The full key list is the `icon` enum in the tool's input schema; it
-covers compute, storage, database, networking, security, integration, analytics,
-ML, management, developer tools, and client/user figures.
+Do not mix providers unless the system genuinely spans them. Keep `label` about
+the node's *role* ("Order handler"), not the service name — the icon already
+says Lambda. `shape` is ignored when `icon` is set.
+
+The full key list is the `icon` enum in the tool's input schema: `aws-*`,
+`azure-*`, and `gcp-*`, covering compute, storage, database, networking,
+security, integration, analytics, ML, management, and developer tools.
 
 `icon` is only available on the structured `spec`; Mermaid has no syntax for it,
-so author AWS diagrams as a spec.
+so author cloud diagrams as a spec.
 
 Use `groups` for phases, layers, or owning systems. A group is drawn as a frame
 around exactly its members. When two frames would otherwise overlap, each group

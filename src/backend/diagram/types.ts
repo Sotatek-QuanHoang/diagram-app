@@ -155,7 +155,7 @@ export type SceneGeom =
   | 'activation'
   | 'table'
   | 'tableRow'
-  | 'awsIcon';
+  | 'cloudIcon';
 
 export interface ScenePoint {
   x: number;
@@ -194,10 +194,14 @@ export interface SceneShape {
   headerHeight?: number;
   /** Hover text; emitted as a draw.io `<object>` wrapper when present. */
   tooltip?: string;
-  /** Short AWS service name, used when no glyph is available. */
+  /** Short service name, used when no glyph is available. */
   serviceName?: string;
-  /** draw.io aws4 icon id, e.g. `route_53`; keys the preview's glyph table. */
-  resIcon?: string;
+  /** draw.io shape id, e.g. `mxgraph.gcp2.cloud_run`; keys the glyph table. */
+  shapeId?: string;
+  /** Colour for glyph paths that carry none of their own. */
+  tint?: string;
+  /** AWS sets its glyph on a coloured tile; the other providers do not. */
+  iconTile?: boolean;
   /** Index into `Scene.styles`. Replaces `drawioStyle` on the wire. */
   styleId?: number;
   drawioStyle?: string;

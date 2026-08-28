@@ -33,24 +33,33 @@ renderer surface's payload limit. The scene travels instead and the file is
 assembled in the browser on demand — which also keeps the file's contents out of
 the model's context, so the agent stops trying to save it somewhere itself.
 
-AWS nodes carry an `icon` key naming a service, and both outputs show the real
-artwork. The `.drawio` file references draw.io's built-in AWS shapes by name;
-the preview cannot reach that shape library, so the same glyphs are extracted
-from draw.io's published stencil set into `src/ui/aws-glyphs.ts` and drawn
-inline. Every `resIcon` name in `aws.ts` was confirmed to render in the editor —
-a wrong name produces a silently blank tile.
+Cloud nodes carry an `icon` key naming a service — `aws-lambda`,
+`azure-functions`, `gcp-bigquery` — and both outputs show the real artwork. The
+`.drawio` file references draw.io's built-in shapes by name; the preview cannot
+reach that shape library, so the same glyphs are extracted from draw.io's
+published stencils into `src/ui/cloud-glyphs.ts` and drawn inline. Every shape
+id in `clouds.ts` was confirmed to render in the editor — a wrong name produces
+a silently blank icon.
 
-Regenerate the glyphs after adding a service to the catalog:
+AWS sets its glyph on a category-coloured tile; Azure and Google draw the glyph
+itself, so those take the brand tint and Google's carry their own colours. That
+distinction is why `fill` means the tile for AWS and the glyph for the others.
+
+Regenerate after adding a service to the catalog:
 
 ```bash
-curl -o /tmp/aws4.xml https://raw.githubusercontent.com/jgraph/drawio/dev/src/main/webapp/stencils/aws4.xml
-node tools/build-aws-glyphs.mjs /tmp/aws4.xml
+mkdir -p /tmp/stencils/mscae
+base=https://raw.githubusercontent.com/jgraph/drawio/dev/src/main/webapp/stencils
+curl -o /tmp/stencils/aws4.xml        $base/aws4.xml
+curl -o /tmp/stencils/gcp2.xml        $base/gcp2.xml
+curl -o /tmp/stencils/mscae/cloud.xml $base/mscae/cloud.xml
+node tools/build-cloud-glyphs.mjs /tmp/stencils
 ```
 
-> `aws-glyphs.ts` embeds AWS's official Architecture Icons (via draw.io's
-> stencil set) in the UI bundle, which costs ~110 KB (~53 KB gzipped). AWS
-> permits these icons in architecture diagrams; check AWS's Architecture Icons
-> terms before distributing this app outside your organisation.
+> `cloud-glyphs.ts` embeds AWS, Azure and Google Cloud architecture icons (via
+> draw.io's stencil sets) in the UI bundle, which costs ~206 KB. Each provider
+> permits its icons in architecture diagrams; check their icon terms before
+> distributing this app outside your organisation.
 
 **Open in draw.io** passes the file through the URL fragment. Fragments are never
 sent in the HTTP request, so the diagram is handed to diagrams.net inside the

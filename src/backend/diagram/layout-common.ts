@@ -1,10 +1,13 @@
 /** Geometry helpers shared by all three layout engines. */
 
+import { measureLine } from './text.js';
 import type { DiagramKind, Scene, SceneEdge, ScenePoint, SceneShape } from './types.js';
 
 export const MARGIN = 40;
 /** Vertical room reserved above the drawing for the title cell. */
 export const TITLE_SPACE = 46;
+/** Must match the size the renderers draw the title at. */
+export const TITLE_FONT_SIZE = 18;
 
 /**
  * Shift everything to positive coordinates and size the canvas around the real
@@ -59,10 +62,14 @@ export function finalize(
     }
   }
 
+  // A narrow diagram can still carry a wide heading; without this the title is
+  // drawn past the edge of the canvas and clipped.
+  const titleWidth = title === '' ? 0 : MARGIN * 2 + measureLine(title, TITLE_FONT_SIZE, true);
+
   return {
     kind,
     title,
-    width: Math.round(Math.max(...xs) + shiftX + MARGIN),
+    width: Math.round(Math.max(Math.max(...xs) + shiftX + MARGIN, titleWidth)),
     height: Math.round(Math.max(...ys) + shiftY + MARGIN),
     shapes,
     edges,

@@ -19,7 +19,7 @@
  */
 
 import type { ArrowHead, Scene, SceneEdge, ScenePoint, SceneShape } from '../backend/diagram/types.js';
-import { AWS_GLYPHS } from './aws-glyphs.js';
+import { CLOUD_GLYPHS } from './cloud-glyphs.js';
 
 export const PAPER = '#ffffff';
 /** One ink colour for every edge, so markers can bake it in rather than relying
@@ -218,13 +218,16 @@ function drawShape(shape: SceneShape): string {
         line
       );
     }
-    case 'awsIcon': {
+    case 'cloudIcon': {
       // The same official glyph the .drawio file references, extracted from
-      // draw.io's stencil set so the preview shows the real icon rather than a
-      // stand-in. A service with no glyph falls back to its name on the tile.
+      // draw.io's stencil sets so the preview shows the real icon rather than a
+      // stand-in. A service with no glyph falls back to its name.
       const tile = shape.headerHeight ?? Math.min(w, h);
       const tx = x + (w - tile) / 2;
-      const glyph = shape.resIcon ? AWS_GLYPHS[shape.resIcon] : undefined;
+      const glyph = shape.shapeId ? CLOUD_GLYPHS[shape.shapeId] : undefined;
+      const tint = shape.tint ?? '#ffffff';
+      // AWS wraps its glyph in a coloured tile; the others stand alone.
+      const tiled = shape.iconTile === true;
       const label = text(
         shape.labelLines,
         x + w / 2,
@@ -234,28 +237,38 @@ function drawShape(shape: SceneShape): string {
         'middle',
         shape.bold,
       );
-      const plate =
-        `<rect x="${round(tx)}" y="${y}" width="${tile}" height="${tile}" rx="4"` +
-        `${fillStroke(fill, 'none')} />`;
+      const plate = tiled
+        ? `<rect x="${round(tx)}" y="${y}" width="${tile}" height="${tile}" rx="4"` +
+          `${fillStroke(fill, 'none')} />`
+        : '';
 
       if (!glyph) {
         const nameSize = 10;
         const name = wrapToWidth(shape.serviceName ?? '', tile - 12, nameSize);
         const nameTop =
           y + tile / 2 - ((name.length - 1) * nameSize * LINE_HEIGHT) / 2 + nameSize * 0.35;
-        return plate + text(name, tx + tile / 2, nameTop, nameSize, '#ffffff', 'middle', true) + label;
+        return (
+          plate +
+          text(name, tx + tile / 2, nameTop, nameSize, tiled ? '#ffffff' : tint, 'middle', true) +
+          label
+        );
       }
 
-      // Fit the glyph inside the tile with AWS's own padding, preserving aspect.
-      const inset = tile * 0.18;
-      const box = tile - inset * 2;
+      // A tiled glyph is inset the way the provider insets it; a standalone one
+      // uses the whole square.
+      const box = tiled ? tile - tile * 0.36 : tile;
       const scale = Math.min(box / glyph.w, box / glyph.h);
       const gx = tx + (tile - glyph.w * scale) / 2;
       const gy = y + (tile - glyph.h * scale) / 2;
+      const paths = glyph.paths
+        .map(
+          (part) =>
+            `<path d="${part.d}" style="fill:${part.fill ?? (tiled ? tint : fill)};stroke:none" />`,
+        )
+        .join('');
       return (
         plate +
-        `<g transform="translate(${round(gx)} ${round(gy)}) scale(${round(scale)})">` +
-        `<path d="${glyph.d}" style="fill:#ffffff;stroke:none" /></g>` +
+        `<g transform="translate(${round(gx)} ${round(gy)}) scale(${round(scale)})">${paths}</g>` +
         label
       );
     }

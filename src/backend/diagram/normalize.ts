@@ -33,7 +33,7 @@ import {
   type SequenceNote,
   type SequenceSpec,
 } from './types.js';
-import { AWS_SERVICES } from './aws.js';
+import { CLOUD_SERVICES } from './clouds.js';
 
 export const LIMITS = {
   mermaidChars: 20_000,
@@ -116,11 +116,11 @@ function normalizeFlowchart(spec: JsonRecord, titleOverride?: string): Flowchart
       ]);
     }
     const icon = node.icon === undefined ? undefined : expectString(node.icon, `spec.nodes[${index}].icon`);
-    if (icon !== undefined && !(icon in AWS_SERVICES)) {
-      const near = Object.keys(AWS_SERVICES)
+    if (icon !== undefined && !(icon in CLOUD_SERVICES)) {
+      const near = Object.keys(CLOUD_SERVICES)
         .filter((key) => key.includes(icon) || icon.includes(key))
         .slice(0, 5);
-      throw new DiagramInputError(`spec.nodes[${index}].icon is not a known AWS service.`, [
+      throw new DiagramInputError(`spec.nodes[${index}].icon is not a known cloud service.`, [
         `Received "${icon}".`,
         near.length > 0 ? `Did you mean: ${near.join(', ')}?` : 'See the drawio-diagrams skill for the list.',
       ]);
