@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useAppContext, useAppFetch, type ToolResultSurfaceProps } from '@sota/platform';
 import { Badge, Button, Spinner, Textarea } from '@sota/platform/ui';
 
@@ -153,6 +153,29 @@ function readResult(
   return typeof candidate.kind === 'string' ? candidate : undefined;
 }
 
+/**
+ * Keeps a surface alive when part of it throws.
+ *
+ * A native surface that throws during render is replaced by the host's raw JSON
+ * view of the tool result — no title, no download, just the payload. That is
+ * strictly worse than a reduced card, so every surface is wrapped and every
+ * piece that can throw is isolated behind its own boundary.
+ */
+class Boundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 /** Header, preview, actions and warnings — identical wherever a diagram shows. */
 function DiagramBody({ result }: { result: DiagramResult }) {
   const hasPreview = Boolean(result.preview?.shapes?.length);
@@ -162,9 +185,17 @@ function DiagramBody({ result }: { result: DiagramResult }) {
         <h3>{result.title || KIND_LABELS[result.kind] || 'Diagram'}</h3>
         <DiagramMeta result={result} />
       </header>
-      {hasPreview ? <DiagramPreview result={result} /> : null}
+      {hasPreview ? (
+        <Boundary fallback={<p className="dg-muted">Preview unavailable.</p>}>
+          <DiagramPreview result={result} />
+        </Boundary>
+      ) : null}
       {!hasPreview && result.summary ? <p className="dg-muted">{result.summary}</p> : null}
-      {hasPreview ? <DiagramActions result={result} /> : null}
+      {hasPreview ? (
+        <Boundary fallback={null}>
+          <DiagramActions result={result} />
+        </Boundary>
+      ) : null}
       <Warnings warnings={result.warnings ?? []} />
     </>
   );
@@ -204,14 +235,48 @@ function ErrorNote({ title, message, details }: { title: string; message: string
 
 /* ------------------------------------------------------------ tool result */
 
-export function DiagramToolResult({
+/**
+ * The tool-result surface.
+ *
+ * Wrapped so that a throw anywhere inside still leaves a readable card. The
+ * fallback deliberately repeats the download: losing the picture is tolerable,
+ * losing the file is not.
+ */
+export function DiagramToolResult(props: ToolResultSurfaceProps<GenerateInput, DiagramResult>) {
+  const result = readResult(props.toolResult);
+  return (
+    <Boundary fallback={<MinimalCard result={result} />}>
+      <ToolResultCard {...props} />
+    </Boundary>
+  );
+}
+
+/** Last resort: title and the file, with no preview to go wrong. */
+function MinimalCard({ result }: { result: DiagramResult | undefined }) {
+  return (
+    <section className="dg-root dg-card" data-sota-app="diagram-app">
+      <header className="dg-header">
+        <h3>{result?.title || 'Diagram'}</h3>
+      </header>
+      {result?.summary ? <p className="dg-muted">{result.summary}</p> : null}
+      {result?.preview?.shapes?.length ? (
+        <Boundary fallback={<p className="dg-muted">This diagram could not be rendered.</p>}>
+          <DiagramActions result={result} />
+        </Boundary>
+      ) : (
+        <p className="dg-muted">This diagram could not be rendered.</p>
+      )}
+    </section>
+  );
+}
+
+function ToolResultCard({
   toolResult,
 }: ToolResultSurfaceProps<GenerateInput, DiagramResult>) {
   const { state } = toolResult;
   // Read and subscribe before any branch: hooks cannot sit behind an early
   // return, and the panel guard must see the pending states too.
   const result = readResult(toolResult);
-  const openInPanel = useOpenInPanel(state, toolResult.toolCallId, result);
 
   if (state === 'input-streaming' || state === 'input-available') {
     // Mounted while the model is still writing its arguments, so every field
@@ -258,12 +323,33 @@ export function DiagramToolResult({
   return (
     <section className="dg-root dg-card" data-sota-app="diagram-app">
       <DiagramBody result={result} />
-      <div className="dg-actions">
-        <Button size="sm" variant="outline" onClick={openInPanel}>
-          Open in side panel
-        </Button>
-      </div>
+      {/* `useAppContext` is the one host dependency in this surface. Isolated so
+          that if it is unavailable on a remount, the card — and its download —
+          survive rather than the whole surface throwing. */}
+      <Boundary fallback={null}>
+        <PanelButton result={result} toolCallId={toolResult.toolCallId} state={state} />
+      </Boundary>
     </section>
+  );
+}
+
+/** Opens the panel automatically, and offers the same as a button. */
+function PanelButton({
+  result,
+  toolCallId,
+  state,
+}: {
+  result: DiagramResult;
+  toolCallId: string;
+  state: string;
+}) {
+  const openInPanel = useOpenInPanel(state, toolCallId, result);
+  return (
+    <div className="dg-actions">
+      <Button size="sm" variant="outline" onClick={openInPanel}>
+        Open in side panel
+      </Button>
+    </div>
   );
 }
 
@@ -296,9 +382,15 @@ function useOpenInPanel(
     if (!result) return;
     // Handed over twice: through the context, and through the shared module in
     // case the context does not reach the surface.
-    const token = rememberDiagram(result);
+    const token = rememberDiagram(result, toolCallId);
     ui.openArtifact(ARTIFACT_KIND, { token, result } as unknown as Record<string, unknown>);
-  }, [ui]);
+  }, [ui, toolCallId]);
+
+  // Remember on sight. The panel can then be opened from this card at any time,
+  // including after the host has navigated away and remounted the bundle.
+  useEffect(() => {
+    if (result) rememberDiagram(result, toolCallId);
+  }, [result, toolCallId]);
 
   useEffect(() => {
     const watchedItFinish = previous.current !== undefined && previous.current !== state;
@@ -325,6 +417,14 @@ const ARTIFACT_KIND = 'diagram';
  * module the opener shares with this surface.
  */
 export function DiagramArtifact(props: unknown) {
+  return (
+    <Boundary fallback={<MinimalCard result={recallDiagram(findToken(props))} />}>
+      <ArtifactPanel {...(props as object)} />
+    </Boundary>
+  );
+}
+
+function ArtifactPanel(props: unknown) {
   const result = findDiagram(props) ?? recallDiagram(findToken(props));
 
   if (!result) {

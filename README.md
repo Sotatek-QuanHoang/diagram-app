@@ -94,10 +94,25 @@ the panel mounts — but the `context` given to `ui.openArtifact` does not reach
 the module's props, which arrive empty.
 
 So the diagram is handed over twice. It goes into the `openArtifact` context
-*and* into `artifact-store.ts`, a module both surfaces share because they are
-components in one bundle. The panel looks for it by token, then anywhere in its
-props, then in that store. If the host ever starts forwarding the context, the
-props path wins and the store is simply unused.
+*and* into `artifact-store.ts`, keyed by the tool call id. The panel looks for it
+by token, then anywhere in its props, then in that store. If the host ever starts
+forwarding the context, the props path wins and the store is simply unused.
+
+That store is backed by `sessionStorage`, not just module memory: navigating to
+another chat and back remounts the bundle and wipes module state, which used to
+leave the panel with nothing to show. Storage access is guarded — private modes
+and quota limits throw — and the in-memory map still serves the current page view
+if it is unavailable.
+
+### Nothing degrades to raw JSON
+
+A native surface that throws during render is replaced by the host's raw JSON
+view of the tool result: no title, no download, just the payload. Both surfaces
+are therefore wrapped in an error boundary, and each part that can throw sits
+behind its own: the preview, the actions, and `useAppContext` — the surface's one
+host dependency, which is isolated so that losing it costs the *Open in side
+panel* button and nothing else. The last-resort fallback still offers the
+download, because losing the picture is tolerable and losing the file is not.
 
 ## Quick access
 
