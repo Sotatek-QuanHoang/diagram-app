@@ -2,6 +2,8 @@ manifestSchemaVersion: 3
 appId: diagram-app
 version: 1.0.0
 displayName: "Diagram App"
+icon: "src/assets/diagram-icon.svg"
+banner: "src/assets/diagram-banner.png"
 description: "Generates flowcharts, sequence diagrams, and ER diagrams as editable draw.io (.drawio) files."
 publisher:
   id: quan-hoang
