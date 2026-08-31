@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { randomUUID } from 'node:crypto';
-import { requireSotaInvocation } from './sota-auth.js';
+import { coreOrigin, requireSotaInvocation } from './sota-auth.js';
 import { registerToolRoutes } from './tool-routes.js';
 
 const appId = 'diagram-app';
@@ -48,21 +48,42 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
   response.status(500).json({ code: 'APP_ERROR', message: 'Request failed' });
 });
 
-const expectedPort = 8787;
-const port = Number(process.env.PORT ?? expectedPort);
+/**
+ * Local development pins the port so the process and the manifest's
+ * `environments.local` overlay cannot drift — `sota dev` tunnels 8787, and a
+ * mismatch fails in a confusing way. A hosted environment assigns its own port,
+ * so the pin applies only outside production.
+ */
+const LOCAL_PORT = 8787;
+const production = process.env.NODE_ENV === 'production';
+const port = Number(process.env.PORT ?? LOCAL_PORT);
+// Containers reach the process through the published port, so production has to
+// bind every interface; locally, loopback keeps it off the network.
+const host = production ? '0.0.0.0' : 'localhost';
+
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   log('error', 'server_failed', { appId, message: 'PORT must be an integer from 1 to 65535' });
   process.exitCode = 1;
-} else if (port !== expectedPort) {
+} else if (!production && port !== LOCAL_PORT) {
   log('error', 'server_failed', {
     appId,
-    message: 'PORT must match the manifest local service port ' + expectedPort,
+    message:
+      `PORT must match the manifest local service port ${LOCAL_PORT}, ` +
+      'or set NODE_ENV=production when hosting.',
   });
   process.exitCode = 1;
 } else {
-  const server = app.listen(port, 'localhost');
+  const server = app.listen(port, host);
   server.once('listening', () => {
-    log('info', 'server_started', { appId, url: `http://localhost:${port}` });
+    // The resolved Core origin is logged because a wrong one fails every
+    // invocation with an opaque 401 — the JWKS simply will not match.
+    log('info', 'server_started', {
+      appId,
+      host,
+      port,
+      production,
+      coreOrigin: coreOrigin.origin,
+    });
   });
   server.once('error', (error: NodeJS.ErrnoException) => {
     log('error', 'server_failed', {

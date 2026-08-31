@@ -8,7 +8,17 @@ export type InvocationClaims = JWTPayload & {
   scp: string[];
 };
 
-const coreOrigin = new URL(process.env.SOTA_CORE_ORIGIN ?? 'https://api.v4.stg.sotaagents.ai');
+/**
+ * Which Core signs the invocation tokens this app will accept.
+ *
+ * The default is the staging Core, which suits the generated starter but is
+ * wrong for anything deployed against another origin: JWKS would be fetched from
+ * the wrong issuer and every request would fail verification with a bare 401.
+ * Set SOTA_CORE_ORIGIN wherever this runs.
+ */
+export const coreOrigin = new URL(
+  process.env.SOTA_CORE_ORIGIN ?? 'https://api.v4.stg.sotaagents.ai',
+);
 const jwks = createRemoteJWKSet(new URL('/.well-known/jwks.json', coreOrigin));
 
 export function requireSotaInvocation(appId: string, scope: string): RequestHandler {

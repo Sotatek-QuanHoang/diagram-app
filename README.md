@@ -141,7 +141,12 @@ sota validate
 
 ## Before deploying
 
-`service.baseUrl` and `health.url` are still the generated `https://diagram-app.invalid`
-placeholders, so `sota validate` fails on `NON_ROUTABLE_DEPLOY_ENDPOINT`. Point
-them at the real hosted backend before `sota deploy`; the `environments.local`
-overlay already covers development.
+`service.baseUrl` and `health.url` point at the hosted backend,
+`https://diagram-app.onrender.com`; the `environments.local` overlay keeps
+development on `http://localhost:8787`. If the hosted origin ever moves, change
+both base-manifest URLs together — a placeholder or non-routable host fails
+`sota validate` with `NON_ROUTABLE_DEPLOY_ENDPOINT`.
+
+The hosted process also needs `NODE_ENV=production` (bind the host-assigned port
+on every interface) and `SOTA_CORE_ORIGIN` set to the Core that signs its
+invocation tokens; see `.env.example`.
