@@ -1,6 +1,6 @@
 manifestSchemaVersion: 3
 appId: diagram-app
-version: 1.0.1
+version: 1.0.2
 displayName: "Diagram App"
 icon: "src/assets/diagram-icon.svg"
 banner: "src/assets/diagram-banner.png"
@@ -87,9 +87,9 @@ contributes:
         export: DiagramToolResult
         styles: dist/ui/app.css
 service:
-  baseUrl: https://diagram-app.onrender.com
+  baseUrl: https://diagram-app.sotaagents.net
 health:
-  url: https://diagram-app.onrender.com/health
+  url: https://diagram-app.sotaagents.net/health
   intervalSeconds: 60
 environments:
   local:
