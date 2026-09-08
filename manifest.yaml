@@ -86,6 +86,35 @@ contributes:
         entry: dist/ui/app.js
         export: DiagramToolResult
         styles: dist/ui/app.css
+config:
+  # `both`, so a value set for the organisation can be overridden by a workspace
+  # that runs on a different cloud. The host asks for workspace-scoped config on
+  # the app's detail page, and an org-only declaration leaves that unavailable.
+  scope: both
+  schemaVersion: 1
+  # Which cloud icon sets this installation draws. All three ship with the app;
+  # an organisation that only runs on one cloud can switch the others off so the
+  # tool stops offering them and the browser stops fetching their glyphs.
+  schema:
+    type: object
+    additionalProperties: false
+    properties:
+      clouds.aws:
+        type: boolean
+        title: AWS service icons
+        description: Draw official AWS architecture icons when a node names an aws-* service.
+      clouds.azure:
+        type: boolean
+        title: Azure service icons
+        description: Draw official Azure architecture icons when a node names an azure-* service.
+      clouds.gcp:
+        type: boolean
+        title: Google Cloud service icons
+        description: Draw official Google Cloud architecture icons when a node names a gcp-* service.
+  defaults:
+    clouds.aws: true
+    clouds.azure: true
+    clouds.gcp: true
 service:
   baseUrl: https://diagram-app.sotaagents.net
 health:

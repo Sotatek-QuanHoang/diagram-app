@@ -12,10 +12,11 @@ import {
   rememberDiagram,
 } from './artifact-store.js';
 import { DiagramComposerPanel } from './composer-panel.js';
+import { loadProvidersForScene, sceneGlyphsReady } from './cloud-glyphs/index.js';
 import { sceneToSvg } from './diagram-svg.js';
 import { sceneToDrawio } from './drawio.js';
 import { EXAMPLES } from './examples.js';
-import type { DiagramResult, GenerateInput, StudioMode } from './types.js';
+import type { DiagramResult, GenerateInput, Scene, StudioMode } from './types.js';
 
 /**
  * draw.io reads a diagram out of the URL fragment. Fragments are never sent in
@@ -37,17 +38,50 @@ const KIND_LABELS: Record<DiagramResult['kind'], string> = {
 /* --------------------------------------------------------- shared pieces */
 
 /**
+ * Fetches the glyph chunks one scene needs and reports when they have landed.
+ *
+ * The initial value is the synchronous answer, so a diagram with no cloud icons
+ * — or one whose provider is already in memory from an earlier render — settles
+ * without a second pass. Only a genuine first fetch causes the extra render,
+ * and until it completes the drawing shows service names rather than nothing.
+ */
+function useCloudGlyphs(scene: Scene): boolean {
+  const [ready, setReady] = useState(() => sceneGlyphsReady(scene));
+
+  useEffect(() => {
+    if (sceneGlyphsReady(scene)) {
+      setReady(true);
+      return;
+    }
+    setReady(false);
+    let live = true;
+    void loadProvidersForScene(scene).then(() => {
+      if (live) setReady(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [scene]);
+
+  return ready;
+}
+
+/**
  * The preview is drawn from the same resolved geometry that was written into
  * the .drawio file, so it is a faithful thumbnail of the download rather than a
  * second interpretation of the spec.
  */
 function DiagramPreview({ result }: { result: DiagramResult }) {
+  const glyphsReady = useCloudGlyphs(result.preview);
   const svg = useMemo(
     () =>
       sceneToSvg(result.preview, {
         ariaLabel: `${KIND_LABELS[result.kind] ?? 'Diagram'}${result.title ? `: ${result.title}` : ''}`,
       }),
-    [result.preview, result.kind, result.title],
+    // `glyphsReady` is not read by the draw: it flips once the scene's provider
+    // chunks resolve, which is the signal to redraw with real icons in place of
+    // the service-name fallback.
+    [result.preview, result.kind, result.title, glyphsReady],
   );
   return (
     <div className="dg-canvas">

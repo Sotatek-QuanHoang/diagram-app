@@ -19,7 +19,7 @@
  */
 
 import type { ArrowHead, Scene, SceneEdge, ScenePoint, SceneShape } from '../backend/diagram/types.js';
-import { CLOUD_GLYPHS } from './cloud-glyphs.js';
+import { glyphFor } from './cloud-glyphs/index.js';
 
 export const PAPER = '#ffffff';
 /** One ink colour for every edge, so markers can bake it in rather than relying
@@ -221,10 +221,12 @@ function drawShape(shape: SceneShape): string {
     case 'cloudIcon': {
       // The same official glyph the .drawio file references, extracted from
       // draw.io's stencil sets so the preview shows the real icon rather than a
-      // stand-in. A service with no glyph falls back to its name.
+      // stand-in. A service falls back to its name when it has no glyph — or
+      // when its provider chunk has not arrived yet, which is why this stays a
+      // plain lookup and the caller redraws once the chunk resolves.
       const tile = shape.headerHeight ?? Math.min(w, h);
       const tx = x + (w - tile) / 2;
-      const glyph = shape.shapeId ? CLOUD_GLYPHS[shape.shapeId] : undefined;
+      const glyph = shape.shapeId ? glyphFor(shape.shapeId) : undefined;
       const tint = shape.tint ?? '#ffffff';
       // AWS wraps its glyph in a coloured tile; the others stand alone.
       const tiled = shape.iconTile === true;

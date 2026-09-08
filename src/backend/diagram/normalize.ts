@@ -34,6 +34,7 @@ import {
   type SequenceSpec,
 } from './types.js';
 import { CLOUD_SERVICES } from './clouds.js';
+import { enabledProviders } from './enabled-clouds.js';
 
 export const LIMITS = {
   mermaidChars: 20_000,
@@ -124,6 +125,23 @@ function normalizeFlowchart(spec: JsonRecord, titleOverride?: string): Flowchart
         `Received "${icon}".`,
         near.length > 0 ? `Did you mean: ${near.join(', ')}?` : 'See the drawio-diagrams skill for the list.',
       ]);
+    }
+    // A provider switched off for this deployment is refused rather than
+    // quietly downgraded to a plain box: the caller asked for an architecture
+    // diagram, and a silent substitution would ship the wrong picture.
+    if (icon !== undefined) {
+      const provider = CLOUD_SERVICES[icon].provider;
+      const enabled = enabledProviders();
+      if (!enabled.has(provider)) {
+        throw new DiagramInputError(
+          `spec.nodes[${index}].icon uses ${provider.toUpperCase()} icons, which are turned off here.`,
+          [
+            `Received "${icon}".`,
+            `Enabled providers: ${[...enabled].join(', ')}.`,
+            'Use an enabled provider, or drop `icon` and let the node draw as a shape.',
+          ],
+        );
+      }
     }
     return {
       id,
