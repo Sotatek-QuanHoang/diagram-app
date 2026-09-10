@@ -1,6 +1,6 @@
 manifestSchemaVersion: 3
 appId: diagram-app
-version: 1.0.3
+version: 1.0.5
 displayName: "Diagram App"
 icon: "src/assets/diagram-icon.svg"
 banner: "src/assets/diagram-banner.png"
@@ -41,6 +41,11 @@ contributes:
       scope: workspace
       description: Start a diagram of a system, flow, or data model.
       argumentHint: what to draw
+      # The command row carries its own artwork; the app-level `icon` is the
+      # store/detail tile and never reaches this list. Without an avatar the
+      # host draws a generic slug, which is why /diagram looked unbranded next
+      # to the other apps.
+      avatar: src/assets/diagram-icon.svg
       mode: insert-only
   ui:
     - id: diagram-composer-panel

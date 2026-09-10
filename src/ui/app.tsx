@@ -309,8 +309,12 @@ function ToolResultCard({
 }: ToolResultSurfaceProps<GenerateInput, DiagramResult>) {
   const { state } = toolResult;
   // Read and subscribe before any branch: hooks cannot sit behind an early
-  // return, and the panel guard must see the pending states too.
+  // return, and the panel guard must see the pending states too. This component
+  // is the only one mounted for every state of the call, so the watch belongs
+  // here — `PanelButton` renders only once the result exists and would mount
+  // too late to see the tool finish.
   const result = readResult(toolResult);
+  const autoOpen = useWatchedFinish(state, toolResult.toolCallId, result !== undefined);
 
   if (state === 'input-streaming' || state === 'input-available') {
     // Mounted while the model is still writing its arguments, so every field
@@ -361,7 +365,7 @@ function ToolResultCard({
           that if it is unavailable on a remount, the card — and its download —
           survive rather than the whole surface throwing. */}
       <Boundary fallback={null}>
-        <PanelButton result={result} toolCallId={toolResult.toolCallId} state={state} />
+        <PanelButton result={result} toolCallId={toolResult.toolCallId} autoOpen={autoOpen} />
       </Boundary>
     </section>
   );
@@ -371,13 +375,13 @@ function ToolResultCard({
 function PanelButton({
   result,
   toolCallId,
-  state,
+  autoOpen,
 }: {
   result: DiagramResult;
   toolCallId: string;
-  state: string;
+  autoOpen: boolean;
 }) {
-  const openInPanel = useOpenInPanel(state, toolCallId, result);
+  const openInPanel = useOpenInPanel(toolCallId, result, autoOpen);
   return (
     <div className="dg-actions">
       <Button size="sm" variant="outline" onClick={openInPanel}>
@@ -391,23 +395,51 @@ function PanelButton({
 const opened = new Set<string>();
 
 /**
- * Opens the side panel when a diagram finishes, and returns a manual opener.
+ * Reports whether this mount *watched* the tool finish, which is what earns an
+ * automatic open.
  *
- * This has to be called from the surface that stays mounted across every state:
- * a component rendered only once the result exists can never observe the
- * transition into it, and would either never fire or fire on every scroll-back.
+ * It has to be called from the component that stays mounted across every state.
+ * One rendered only after the result exists cannot observe the transition into
+ * it: its first effect sees no previous state, and `output-available` never
+ * changes again, so the open would never fire at all. That was the bug — the
+ * watch lived in `PanelButton`, which renders only in the final branch.
  *
- * The panel opens only when this mount *watched* the state change. History
- * mounts straight into `output-available`, and hijacking the panel for a diagram
- * someone scrolled past would be obnoxious.
+ * History mounts straight into `output-available` with no transition to see, so
+ * scrolling past an old diagram correctly leaves the panel alone.
+ */
+function useWatchedFinish(state: string, toolCallId: string, hasResult: boolean): boolean {
+  const previous = useRef<string | undefined>(undefined);
+  const sawFinish = useRef(false);
+  const [armed, setArmed] = useState(false);
+
+  useEffect(() => {
+    const changed = previous.current !== undefined && previous.current !== state;
+    previous.current = state;
+    // Sticky, because the payload can land a tick after the state does. Testing
+    // both in the same pass would miss that case: by the time the result
+    // arrives, the transition is no longer the current one.
+    if (changed && state === 'output-available') sawFinish.current = true;
+    if (!sawFinish.current || !hasResult) return;
+    if (opened.has(toolCallId)) return;
+    setArmed(true);
+  }, [state, toolCallId, hasResult]);
+
+  return armed;
+}
+
+/**
+ * Opens the panel, and performs the automatic open once armed.
+ *
+ * `useAppContext` is this surface's one host dependency, which is why the call
+ * stays down here inside the error boundary rather than moving up to the watch:
+ * losing the context should cost the panel button, not the card.
  */
 function useOpenInPanel(
-  state: string,
   toolCallId: string,
   result: DiagramResult | undefined,
+  autoOpen: boolean,
 ): () => void {
   const { ui } = useAppContext();
-  const previous = useRef<string | undefined>(undefined);
   const latest = useRef(result);
   latest.current = result;
 
@@ -426,14 +458,14 @@ function useOpenInPanel(
     if (result) rememberDiagram(result, toolCallId);
   }, [result, toolCallId]);
 
+  // The call is claimed here rather than where the finish is spotted: if the
+  // host context is missing this component never mounts, and the tool call has
+  // to stay unclaimed so a later mount can still open it.
   useEffect(() => {
-    const watchedItFinish = previous.current !== undefined && previous.current !== state;
-    previous.current = state;
-    if (state !== 'output-available' || !watchedItFinish || !result) return;
-    if (opened.has(toolCallId)) return;
+    if (!autoOpen || opened.has(toolCallId)) return;
     opened.add(toolCallId);
     open();
-  }, [state, toolCallId, result, open]);
+  }, [autoOpen, toolCallId, open]);
 
   return open;
 }
